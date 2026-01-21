@@ -8,6 +8,10 @@ public class PlayerProperties : MonoBehaviour
     [SerializeField] internal float Speed;
     [SerializeField] internal float JumpPower;
 
+    // Flags
+    [SerializeField] internal bool onGround;
+    [SerializeField] internal bool faceRight;
+
     void Start()
     {
         

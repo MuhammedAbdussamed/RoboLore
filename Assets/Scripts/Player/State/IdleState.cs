@@ -4,11 +4,18 @@ using UnityEngine;
 
 public class IdleState : IState
 {
-    public void Enter(PlayerController controller) { }
+    public void Enter(PlayerController controller) { controller.stateControl = PlayerController.PlayerState.Idle; }
     public void Exit(PlayerController controller) { }
 
     public void Update(PlayerController controller) 
-    { 
-        
+    {
+        if (controller.playerProperties.onGround && Mathf.Abs(controller.moveDirection) >= 0.01f)   // Yerdeyse ve yürüyorsa... ( Mathf.Abs mutlak deðer alýr )
+        {
+            controller.ChangeState(controller.walkState);
+        }
+        else if (!controller.playerProperties.onGround)     // Yerde deðilse
+        {
+            controller.ChangeState(controller.jumpState);
+        }
     }
 }

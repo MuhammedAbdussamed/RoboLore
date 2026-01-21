@@ -4,20 +4,21 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    // Scripts
+    [Header("Character States")]
+    [SerializeField] internal PlayerState stateControl;
+    internal IState currentState;
+    internal IState walkState;
+    internal IState idleState;
+    internal IState jumpState;
+
+    [Header("Script References")]
     [SerializeField] internal PlayerProperties playerProperties;
 
     // Components
     internal Rigidbody rb;
 
-    // Variables
+    // Movement Variables
     internal float moveDirection;
-
-    // State
-    internal PlayerState currentState;
-    internal IState state;
-    internal IState walkState;
-    internal IState idleState;
 
     public static PlayerController Instance { get; private set; }
 
@@ -34,12 +35,11 @@ public class PlayerController : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
 
-        currentState = PlayerState.Idle;
-
         walkState = new WalkState();
         idleState = new IdleState();
+        jumpState = new JumpState();
 
-        state = idleState;
+        currentState = idleState;
     }
 
     void OnEnable()
@@ -54,8 +54,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        UpdateState();
-        state.Update(this);
+        currentState.Update(this);
     }
 
     void FixedUpdate()
@@ -73,14 +72,48 @@ public class PlayerController : MonoBehaviour
             moveDirection * playerProperties.Speed,      // 
             rb.velocity.y,                               // Sadece z eksenine kuvvet uyguluyoruz.
             rb.velocity.z                                // 
-            );
+        );
+
+        Turn();
+    }
+
+    /*-----------------------------------------*/
+
+    void Turn()
+    {
+        if (moveDirection == 0) { return; }                 // Yürüme girdisi yoksa döngüyü kýr.
+
+        else if (moveDirection < 0)
+        {
+            playerProperties.faceRight = false;
+        }
+        else
+        {
+            playerProperties.faceRight = true;
+        }
+
+        float targetY = playerProperties.faceRight ? 90f : -90f;        // faceRight true ise robotun bakmasi gereken yer Y 90 derece. false ise -90 derece.
+
+        Vector3 currentEuler = transform.eulerAngles;                   // Güncel açýlarý aldýk.
+
+        float newY = Mathf.MoveTowardsAngle(            // Yeni Y derecesi her frame güncellenir.
+            currentEuler.y,                             // Mevcut y konumundan , hedef y konumuna doðru akar.
+            targetY,                                    
+            720f * Time.deltaTime                       // Her saniye 720 derece döner.
+        );
+
+        transform.rotation = Quaternion.Euler(          // Y derecesi güncellendiði her frame, player'ýn mevcut rotasyonuna uygulanir.
+            currentEuler.x,
+            newY,                                       //
+            currentEuler.z                              // Bir nevi önceden deðiþtirdiðimiz datayý burada karaktere uyguluyoruz.
+        );                                              // 
     }
 
     /*-----------------------------------------*/
 
     void JumpPlayer(bool isJumping)
     {
-        if (InputManager.isJumping)
+        if (InputManager.isJumping && playerProperties.onGround)
         {
             Debug.Log("Zipliyor");
             rb.velocity = new Vector3(rb.velocity.x, playerProperties.JumpPower, rb.velocity.z);   // Mevcut x ve z deðerini koru ki karakter havada sað sol yapabilsin.
@@ -90,25 +123,11 @@ public class PlayerController : MonoBehaviour
 
     /*-----------------------------------------*/
 
-    public void UpdateState()
+    public void ChangeState(IState newState)
     {
-        switch (currentState)
-        {
-            case PlayerState.Idle:
-                ChangeState(idleState);
-                break;
-
-            case PlayerState.Walk:
-                ChangeState(walkState);
-                break;
-        }
-    }
-
-    void ChangeState(IState newState)
-    {
-        state.Exit(this);
-        state = newState;
-        state.Enter(this);
+        currentState.Exit(this);
+        currentState = newState;
+        currentState.Enter(this);
     }
 
     /*-----------------------------------------*/

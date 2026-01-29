@@ -8,8 +8,8 @@ public class AnimationController : MonoBehaviour
     internal PlayerController controller;
 
     // Animators
-    internal Animator animator;
-
+    private Animator animator;      // Oyuncu animatörü
+    
     // State
     [SerializeField] internal PlayerController.PlayerState lastState;          // Animasyonlari deðiþtirmek için kullanacaðimiz karakter durum bilgisi
 
@@ -21,7 +21,7 @@ public class AnimationController : MonoBehaviour
         lastState = controller.stateControl;                // Oyuncunun durum bilgisini aldik.
     }
 
-    void Update()
+    void LateUpdate()
     {
         SetAnimations();
     }
@@ -30,9 +30,8 @@ public class AnimationController : MonoBehaviour
     {
         if (controller.stateControl != lastState)           // Deðiþkende ki durum, güncel durum ile bir deðilse
         {
-            lastState = controller.stateControl;            // Durumu güncelle
+            lastState = controller.stateControl;                  // Durumu güncelle
             animator.SetInteger("State", (int)lastState);   // Güncel durumun enum indexini al ve animatorde ki integer'i ona ayarla.
         }
     }
-
 }

@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Character States")]
-    [SerializeField] internal PlayerState stateControl;
-    internal IState currentState;
-    internal IState walkState;
-    internal IState idleState;
-    internal IState jumpState;
-
     [Header("Script References")]
     [SerializeField] internal PlayerProperties playerProperties;
+
+    // Character States
+    internal PlayerState stateControl;      // Animasyon deðiþtirmek için kontrol ettiðimiz deðiþken.
+    internal IState currentState;           // FSM sisteminde ki güncel durum
+    internal IState walkState;              //
+    internal IState idleState;              //  Karakterin içerisinde bulunabileceði farkli durumlar.
+    internal IState jumpState;              //
 
     // Components
     internal Rigidbody rb;
@@ -35,6 +35,8 @@ public class PlayerController : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
 
+        stateControl = PlayerState.Idle;
+
         walkState = new WalkState();
         idleState = new IdleState();
         jumpState = new JumpState();
@@ -45,11 +47,13 @@ public class PlayerController : MonoBehaviour
     void OnEnable()
     {
         InputManager.OnJumpInput += JumpPlayer;
+        InputManager.OnDashInput += Dash;
     }
 
     void OnDisable()
     {
         InputManager.OnJumpInput -= JumpPlayer;
+        InputManager.OnDashInput -= Dash;
     }
 
     void Update()
@@ -70,7 +74,7 @@ public class PlayerController : MonoBehaviour
 
         rb.velocity = new Vector3(
             moveDirection * playerProperties.Speed,      // 
-            rb.velocity.y,                               // Sadece z eksenine kuvvet uyguluyoruz.
+            rb.velocity.y,                               // Sadece x eksenine kuvvet uyguluyoruz.
             rb.velocity.z                                // 
         );
 
@@ -99,7 +103,7 @@ public class PlayerController : MonoBehaviour
         float newY = Mathf.MoveTowardsAngle(            // Yeni Y derecesi her frame güncellenir.
             currentEuler.y,                             // Mevcut y konumundan , hedef y konumuna doðru akar.
             targetY,                                    
-            720f * Time.deltaTime                       // Her saniye 720 derece döner.
+            3000f * Time.deltaTime                       // Her saniye 3000 derece döner.
         );
 
         transform.rotation = Quaternion.Euler(          // Y derecesi güncellendiði her frame, player'ýn mevcut rotasyonuna uygulanir.
@@ -115,7 +119,6 @@ public class PlayerController : MonoBehaviour
     {
         if (InputManager.isJumping && playerProperties.onGround)
         {
-            Debug.Log("Zipliyor");
             rb.velocity = new Vector3(rb.velocity.x, playerProperties.JumpPower, rb.velocity.z);   // Mevcut x ve z deðerini koru ki karakter havada sað sol yapabilsin.
             // rb.AddForce(Vector3.up * playerProperties.JumpPower, ForceMode.Impulse);            // Burada mevcut deðerler korunmuyor. Ýleride bug çýkarabilir.
         }
@@ -132,6 +135,12 @@ public class PlayerController : MonoBehaviour
 
     /*-----------------------------------------*/
 
+    void Dash()
+    {
+        rb.velocity = Vector3.zero;
+        rb.AddForce(transform.forward * playerProperties.DashSpeed, ForceMode.Impulse);
+    }
+
     #endregion
 
     #region Enums
@@ -140,7 +149,8 @@ public class PlayerController : MonoBehaviour
     {
         Idle,
         Walk,
-        Jump
+        Jump,
+        Dash
     }
 
     #endregion

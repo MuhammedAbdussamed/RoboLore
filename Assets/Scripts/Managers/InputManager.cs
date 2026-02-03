@@ -80,6 +80,7 @@ public class InputManager : MonoBehaviour
     void Fire(InputAction.CallbackContext context)
     {
         OnAttackInput?.Invoke();
+
     }
 
     /*-------------------*/

@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Script References")]
-    [SerializeField] internal PlayerProperties playerProperties;
+    // Script Reference
+    internal PlayerProperties playerProperties;
 
     // Character States
     internal PlayerState stateControl;      // Animasyon deðiþtirmek için kontrol ettiðimiz deðiþken.
@@ -37,11 +37,15 @@ public class PlayerController : MonoBehaviour
 
         stateControl = PlayerState.Idle;
 
+        // States
         walkState = new WalkState();
         idleState = new IdleState();
         jumpState = new JumpState();
 
         currentState = idleState;
+
+        // Assign
+        playerProperties = GetComponent<PlayerProperties>();
     }
 
     void OnEnable()

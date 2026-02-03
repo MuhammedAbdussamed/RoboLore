@@ -1,77 +1,107 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PatrolState : Enemy_IState
 {
-    void Enter(Enemy_Bot_Base botController) { botController.botState = Enemy_Bot_Base.BotState.Patrol; }
+    private float waitTime;
+    private int patrolIndex;
 
-    void Exit(Enemy_Bot_Base botController) { }
-
-    void Update(Enemy_Bot_Base botController)
+    public void Enter(Enemy_Bot_Base botController)
     {
-        Patrol(botController);
+        botController.botAnimationState = Enemy_Bot_Base.BotAnimationState.Walk;
+        botController.patrolPointBools[patrolIndex] = true;
+        botController.botAI.SetDestination(botController.patrolPoints[patrolIndex].position);
+    }
+
+    public void Exit(Enemy_Bot_Base botController) { ResetPatrolPoints(botController); }
+
+    public void Update(Enemy_Bot_Base botController)
+    {
+        SetWaitTime(botController);
+        SetTargetPoint(botController);
+
+        Debug.Log(patrolIndex);
+
+        if (botController.fovScript.playerDetected)
+        {
+            botController.ChangeState(botController.followState);
+        }
     }
 
     #region Functions
 
     void Patrol(Enemy_Bot_Base botController)
     {
-        switch (botController.currentPoint)
+        for (int i = 0; i < botController.patrolPointBools.Length; i++)
         {
-            case Enemy_Bot_Base.PatrolPointState.None:
-                SetPatrolPoint(botController, 0);
-                break;
-
-            case Enemy_Bot_Base.PatrolPointState.point1:
-                SetPatrolPoint(botController, 1);
-                break;
-
-            case Enemy_Bot_Base.PatrolPointState.point2:
-                SetPatrolPoint(botController, 2);
-                break;
-
-            case Enemy_Bot_Base.PatrolPointState.point3:
-                SetPatrolPoint(botController, 3);
-                break;
+            if (botController.patrolPointBools[i])
+            {
+                botController.botAI.SetDestination(botController.patrolPoints[i].position);
+            }
         }
     }
 
+    /*---------------------------------------------------------------*/
 
-    void SetPatrolPoint(Enemy_Bot_Base botController, int patrolPointIndex)
+    void SetTargetPoint(Enemy_Bot_Base botController)
     {
-        botController.botAI.ResetPath();
+        if (botController.botAI.pathPending) { return; }                    // Yol hesaplaniyorsa döngüyü kir
 
-        botController.botAI.SetDestination(botController.patrolPoints[patrolPointIndex].position);
+        if (botController.botAI.remainingDistance > 0.2f) { return; }       // Hedefe olan uzaklik 0.2f den fazlaysa döngüyü kýr
 
-        botController.transform.LookAt(new Vector3(
-            botController.botAI.destination.x,
-            botController.transform.position.y,
-            botController.botAI.destination.z
-        ));
+        botController.botAI.isStopped = true;                               // Hedefe varilmiþsa botu durdur
+
+        botController.botAnimationState = Enemy_Bot_Base.BotAnimationState.Idle;
+
+        if (waitTime > 0.2f) { return; }                                    // waitTime kadar bekle
+
+        for (int i = 0; i < botController.patrolPointBools.Length; i++)
+        {
+            if (botController.patrolPointBools[i])
+            {
+                botController.patrolPointBools[i] = false;                                              // Hedefe varildiði için mevcut boolu false çevir.
+
+                patrolIndex = (patrolIndex + 1) % botController.patrolPointBools.Length;
+
+                botController.patrolPointBools[patrolIndex] = true;
+
+                Patrol(botController);                                                                  // Bool dizisini dön. True olana istikamet ayarla
+
+                botController.botAnimationState = Enemy_Bot_Base.BotAnimationState.Walk;
+                break;
+            }
+        }
+
+        botController.botAI.isStopped = false;
     }
 
-/*-------------------------------------------------------*/
+    /*------------------------------------------*/
 
-    IEnumerator CheckPatrolPoints(Enemy_Bot_Base botController)
+    void SetWaitTime(Enemy_Bot_Base botController)
     {
-        float distance = botController.botAI.remainingDistance;
-
-        if (distance < 0.25f)
+        if (botController.botAI.isStopped)
         {
-            botController.botAI.isStopped = true;
+            waitTime -= Time.deltaTime;
+        }
+        else
+        {
+            waitTime = botController.CornerWaitTime;
+        }
+    }
 
-            yield return new WaitForSeconds(botController.CornerWaitTime);
+    /*-------------------------------------------*/
 
-            botController.currentPoint = (Enemy_Bot_Base.PatrolPointState)((int)botController.currentPoint + 1);    // Mevcut enum elemaninin indexini al ve 1 ekle. Artik bu bir intager. En baþtaki kod satiri ile tekrar enuma çeviriyoruz.
-
-            botController.botAI.isStopped = false;
+    void ResetPatrolPoints(Enemy_Bot_Base botController)
+    {
+        for(int i = 0; i < botController.patrolPointBools.Length; i++)
+        {
+            botController.patrolPointBools[i] = false;
         }
     }
 
     #endregion
 }
-    
+
 
 

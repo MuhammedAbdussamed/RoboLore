@@ -7,7 +7,6 @@ public class Player_UI : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private Image hpBar;
-    [SerializeField] private Image heatBar;
 
     // Script References
     private PlayerController playerController;
@@ -27,7 +26,6 @@ public class Player_UI : MonoBehaviour
     void SetBarsValue()
     {
         hpBar.fillAmount = playerController.playerProperties.Health / playerController.playerProperties.MaxHealth;  // Caný maksimum cana bölüyoruz. Çünkü can barinin alabileceði en büyük deðer 1.
-        heatBar.fillAmount = playerController.playerProperties.Heat / playerController.playerProperties.MaxHeat;    // Ayni iþlemi heat deðeri için yapiyoruz
     }
 
     #endregion

@@ -5,42 +5,57 @@ using UnityEngine.AI;
 
 public class Enemy_Bot_Base : MonoBehaviour
 {
+    /*-
     [Header("Bot Properties")]
     [SerializeField] internal float BotSpeed;
     [SerializeField] internal float BotHealth;
     [SerializeField] internal float BotAttackDamage;
+    -*/
+
     [SerializeField] internal float CornerWaitTime;
 
     [Header("Patrol Points")]
     [SerializeField] public Transform[] patrolPoints;
+    internal bool[] patrolPointBools;
+    internal int patrolPointIndex;
 
-    [Header("Current Bot State")]
-    [SerializeField] internal BotState botState;
-    internal PatrolPointState currentPoint;
+    // Bot States
+    internal BotAnimationState botAnimationState;
     internal Enemy_IState currentState;
     internal Enemy_IState patrolState;
     internal Enemy_IState followState;
 
+    // Script References
+    internal FOV fovScript;
+
     // Components
     internal NavMeshAgent botAI;
+    internal Rigidbody rb;
 
-    // State Bools
-    internal bool patroling;
-    internal bool attacking;
-    internal bool following;
-
-    void Start()
+    void Awake()
     {
+        // States
         patrolState = new PatrolState();
         followState = new FollowState();
         botAI = new NavMeshAgent();
 
         currentState = patrolState;
+        
+        // Components
+        botAI = GetComponent<NavMeshAgent>();
+        rb = GetComponent<Rigidbody>();
+        fovScript = GetComponentInChildren<FOV>();
+    }
+
+    void Start()
+    {
+        patrolPointBools = new bool[patrolPoints.Length];
+        currentState.Enter(this);
     }
 
     void Update()
     {
-
+        currentState.Update(this);
     }
 
     #region Functions
@@ -54,17 +69,16 @@ public class Enemy_Bot_Base : MonoBehaviour
 
     #endregion
 
-    public enum BotState
+    #region Enums
+
+    public enum BotAnimationState
     {
-        Patrol,
+        Idle,
+        Walk,
         Follow,
         Attack
     }
 
-    /*-----------------------------------*/
+    #endregion
 
-    public enum PatrolPointState
-    {
-        None, point1, point2, point3, point4
-    }
 }

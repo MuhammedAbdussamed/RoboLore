@@ -11,18 +11,18 @@ TagManager:
   - 
   - Water
   - UI
+  - Player
   - 
   - 
   - 
   - 
+  - AI
+  - NavMesh Ignore
   - 
   - 
   - 
   - 
-  - 
-  - 
-  - 
-  - 
+  - PlayerThrowableObjects
   - 
   - 
   - 

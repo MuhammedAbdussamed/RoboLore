@@ -12,6 +12,7 @@ public class PlayerProperties : MonoBehaviour
     [SerializeField] internal float CoolingRate;
     [SerializeField] internal float BulletSpeed;
     [SerializeField] internal float DashSpeed;
+    [SerializeField] internal float HeatPerBullet;
     internal float MaxHeat;
     internal float MaxHealth;
 

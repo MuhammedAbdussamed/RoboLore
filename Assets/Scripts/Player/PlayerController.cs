@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,11 +15,19 @@ public class PlayerController : MonoBehaviour
     internal IState idleState;              //  Karakterin içerisinde bulunabileceði farkli durumlar.
     internal IState jumpState;              //
 
+    // Events
+    public static Action OnTakeDamage;
+    public static Action OnSwitchGun;
+
     // Components
     internal Rigidbody rb;
 
     // Movement Variables
     internal float moveDirection;
+    internal float currentHealth;
+
+    // Enum deðiþkenleri
+    internal Gun currentWeapon;
 
     public static PlayerController Instance { get; private set; }
 
@@ -43,6 +52,7 @@ public class PlayerController : MonoBehaviour
         jumpState = new JumpState();
 
         currentState = idleState;
+        currentWeapon = Gun.Pistol;
 
         // Assign
         playerProperties = GetComponent<PlayerProperties>();
@@ -52,6 +62,7 @@ public class PlayerController : MonoBehaviour
     {
         InputManager.OnJumpInput += JumpPlayer;
         InputManager.OnDashInput += Dash;
+        InputManager.OnSwitchGunInput += SwitchGun;
     }
 
     void OnDisable()
@@ -70,6 +81,16 @@ public class PlayerController : MonoBehaviour
         MovePlayer();
     }
 
+    void OnCollisionEnter(Collision col)
+    {
+        if(col.collider.CompareTag("AI")) 
+        {
+            Enemy_Bot_Base botScript = col.collider.GetComponent<Enemy_Bot_Base>();
+            StartCoroutine(TakeDamage(botScript));
+        }
+    }
+
+    
     #region Functions
 
     void MovePlayer()
@@ -119,6 +140,23 @@ public class PlayerController : MonoBehaviour
 
     /*-----------------------------------------*/
 
+    IEnumerator TakeDamage(Enemy_Bot_Base botScript)
+    {
+        OnTakeDamage?.Invoke();
+
+        float AD = botScript.BotAttackDamage;
+
+        playerProperties.MaxHealth -= AD;
+
+        gameObject.layer = LayerMask.NameToLayer("Untouchable");
+
+        yield return new WaitForSeconds(1.2f);
+
+        gameObject.layer = LayerMask.NameToLayer("Player");
+    }
+
+    /*-----------------------------------------*/
+
     void JumpPlayer(bool isJumping)
     {
         if (InputManager.isJumping && playerProperties.onGround)
@@ -145,6 +183,19 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(transform.forward * playerProperties.DashSpeed, ForceMode.Impulse);
     }
 
+    /*------------------------------------------*/
+
+    void SwitchGun()
+    {
+        int gunCount = Enum.GetValues(typeof(Gun)).Length;      // Bütün deðerleri al(typeof) kaç öðe varsa onun uzunluðunu gunCounta yaz
+        currentWeapon = (Gun)(((int)currentWeapon + 1) % gunCount);
+
+        OnSwitchGun?.Invoke();
+    }
+
+
+    /*------------------------------------------*/
+
     #endregion
 
     #region Enums
@@ -155,6 +206,12 @@ public class PlayerController : MonoBehaviour
         Walk,
         Jump,
         Dash
+    }
+
+    public enum Gun
+    {
+        Pistol,
+        MachineGun
     }
 
     #endregion

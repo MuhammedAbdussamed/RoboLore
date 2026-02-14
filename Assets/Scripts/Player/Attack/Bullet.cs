@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
+    // Bullet Properties
+    private float bulletSpeed;
+    private float bulletDamage;
+
     // Script References
     private PlayerController controller;
 
@@ -20,20 +24,21 @@ public class Bullet : MonoBehaviour
         bulletRb = GetComponent<Rigidbody>();
     }
 
-    void Update()
-    {
-        Fire();
-    }
-
     void OnCollisionEnter(Collision col)
     {
         DestroyBullet();
+    }
+
+    void Update()
+    {
+        Fire();
     }
 
     #region Functions
 
     void Fire()
     {
+        Debug.Log("Ateþlendim!");
 
         if (!isFired || isFiring) { return; }               // Mermi ateþlenmemiþ ise ve þuanda ateþlenmiyor ise...
 
@@ -69,7 +74,7 @@ public class Bullet : MonoBehaviour
     // Object Pooling için mermi yok edilmiyor , yeniden kullanilmak üzere resetleniyor.
     void DestroyBullet()
     {
-        gameObject.SetActive(false);                            
+        gameObject.SetActive(false);
         transform.localPosition = new Vector3(0f, 0f, 0f);      // Pozisyonunu sifirla
         transform.rotation = Quaternion.identity;               // Açisini sifirla
 

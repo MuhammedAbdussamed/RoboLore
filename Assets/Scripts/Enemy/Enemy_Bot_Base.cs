@@ -5,15 +5,14 @@ using UnityEngine.AI;
 
 public class Enemy_Bot_Base : MonoBehaviour
 {
-    /*-
     [Header("Bot Properties")]
     [SerializeField] internal float BotSpeed;
     [SerializeField] internal float BotHealth;
     [SerializeField] internal float BotAttackDamage;
-    -*/
-
     [SerializeField] internal float CornerWaitTime;
-
+    [SerializeField] internal float BotMaxHealth;
+    [SerializeField] internal BotType botType;
+    
     [Header("Patrol Points")]
     [SerializeField] public Transform[] patrolPoints;
     internal bool[] patrolPointBools;
@@ -40,7 +39,7 @@ public class Enemy_Bot_Base : MonoBehaviour
         botAI = new NavMeshAgent();
 
         currentState = patrolState;
-        
+
         // Components
         botAI = GetComponent<NavMeshAgent>();
         rb = GetComponent<Rigidbody>();
@@ -56,6 +55,14 @@ public class Enemy_Bot_Base : MonoBehaviour
     void Update()
     {
         currentState.Update(this);
+    }
+
+    void OnCollisionEnter(Collision col)
+    {
+        if (col.collider.CompareTag("ThrowableObjects"))
+        {
+
+        }
     }
 
     #region Functions
@@ -77,6 +84,11 @@ public class Enemy_Bot_Base : MonoBehaviour
         Walk,
         Follow,
         Attack
+    }
+
+    public enum BotType
+    {
+        SpiderBot
     }
 
     #endregion

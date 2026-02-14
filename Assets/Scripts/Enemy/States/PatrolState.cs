@@ -21,8 +21,6 @@ public class PatrolState : Enemy_IState
         SetWaitTime(botController);
         SetTargetPoint(botController);
 
-        Debug.Log(patrolIndex);
-
         if (botController.fovScript.playerDetected)
         {
             botController.ChangeState(botController.followState);

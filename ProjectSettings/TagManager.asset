@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - AI
   layers:
   - Default
   - TransparentFX
@@ -20,8 +21,8 @@ TagManager:
   - NavMesh Ignore
   - 
   - 
-  - 
-  - 
+  - Untouchable
+  - FOV
   - PlayerThrowableObjects
   - 
   - 

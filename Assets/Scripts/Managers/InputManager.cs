@@ -23,12 +23,14 @@ public class InputManager : MonoBehaviour
     internal InputAction fireAction;
     internal InputAction danceAction;
     internal InputAction dashAction;
+    internal InputAction switchGun;
 
     // Events
     public static Action<bool> OnJumpInput;
     public static Action OnPauseInput;
     public static Action OnAttackInput;
     public static Action OnDashInput;
+    public static Action OnSwitchGunInput;
 
     // Variables
     public static float moveDir;
@@ -43,6 +45,8 @@ public class InputManager : MonoBehaviour
     {
         moveAction.performed += Move;               // moveAction girdisi alýndýðýnda "Move" fonksiyonu çaliþacak çünkü abone olduk
         moveAction.canceled += StopMove;
+
+        switchGun.performed += SwitchGun;
 
         dashAction.performed += Dash;
 
@@ -80,7 +84,6 @@ public class InputManager : MonoBehaviour
     void Fire(InputAction.CallbackContext context)
     {
         OnAttackInput?.Invoke();
-
     }
 
     /*-------------------*/
@@ -106,6 +109,13 @@ public class InputManager : MonoBehaviour
 
     /*-------------------*/
 
+    void SwitchGun(InputAction.CallbackContext context)
+    {
+        OnSwitchGunInput?.Invoke();
+    }
+
+    /*-------------------*/
+
     void AssignInputs()
     {
         movementMap = inputs.FindActionMap("Movement");
@@ -117,6 +127,7 @@ public class InputManager : MonoBehaviour
         jumpAction = movementMap.FindAction("Jump");
         pauseAction = gameMap.FindAction("Pause");
         fireAction = attackMap.FindAction("Fire");
+        switchGun = movementMap.FindAction("SwitchGun");
 
         inputs.Enable();
     }
